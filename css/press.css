@@ -1,117 +1,88 @@
-/* Dicono di noi: press page. Uses the tokens from styles.css. */
+/* Dicono di noi: press page. Uses the tokens from styles.css. One article per screen. */
 
-/* ---------- Hero ---------- */
-.press-hero { padding: calc(118px + clamp(64px, 10vw, 128px)) 0 clamp(64px, 9vw, 112px); }
-.press-hero__quote { max-width: 14ch; }
-.press-hero__src { margin: var(--space-4) 0 0; font-size: 13px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-muted); }
-.press-hero__count {
-  margin: var(--space-6) 0 0; padding-top: var(--space-4); border-top: 1px solid var(--line);
-  font-family: var(--font-sans); font-size: 13px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-muted);
-  display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px;
+.press {
+  min-height: var(--screen); padding: var(--pad-y) 0; display: flex; align-items: center;
+  scroll-snap-align: start; scroll-margin-top: var(--header-h); overflow: hidden;
 }
-.press-hero__count span { font-family: var(--font-display); font-size: clamp(44px, 6vw, 72px); font-weight: 400; letter-spacing: 0; color: var(--vino-text); line-height: 1; }
-.press-hero__count i { font-style: normal; opacity: .5; }
-
-/* ---------- Bands ---------- */
-.press { position: relative; padding: clamp(72px, 10vw, 128px) 0; overflow: hidden; }
+/* The first article opens the page, under the fixed header */
+main > .press:first-child { min-height: 100svh; padding-top: calc(var(--header-h) + var(--pad-y)); scroll-margin-top: 0; }
 .press--bg { background: var(--bg); }
 .press--sunken { background: var(--bg-sunken); }
 .press--vino { background: var(--vino); color: var(--on-vino); }
 .press--dark { background: var(--bg-inverse); color: var(--ink-inverse); }
 .press--vino .eyebrow, .press--dark .eyebrow { color: var(--rosato); }
 
-/* ---------- Layout ---------- */
-.press__grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: clamp(40px, 7vw, 112px); align-items: center; }
+.press__grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: var(--gap); align-items: center; }
 .press--right .press__text { order: 2; }
 .press--right .press__clip { order: 1; }
-.press--center .press__grid { grid-template-columns: 1fr; justify-items: center; text-align: center; }
-.press--center .press__text { max-width: 900px; }
-.press--center .press__clip { max-width: 560px; }
-.press__text { min-width: 0; position: relative; }
+.press__text { min-width: 0; }
 
-/* ---------- Head: outlined year behind the outlet ---------- */
-.press__head { position: relative; padding-top: clamp(40px, 6vw, 72px); margin-bottom: var(--space-4); }
-.press__year {
-  position: absolute; top: 0; left: -0.04em; z-index: 0; pointer-events: none;
-  font-family: var(--font-display); font-size: clamp(110px, 16vw, 210px); line-height: .8; letter-spacing: -.03em;
-  color: transparent; -webkit-text-stroke: 1px var(--line-strong); opacity: .55;
-}
-.press--vino .press__year, .press--dark .press__year { -webkit-text-stroke-color: var(--rosato); opacity: .35; }
-.press--center .press__year { left: 50%; transform: translateX(-50%); }
+.press__head { position: relative; padding-top: clamp(16px, 4svh, 44px); margin-bottom: var(--space-3); }
 .press__head .eyebrow, .press__title { position: relative; z-index: 1; }
-.press__title { font-size: 14px; line-height: 21px; margin: 0; opacity: .8; font-style: italic; }
+.press__year { position: absolute; top: 0; left: -.04em; z-index: 0; pointer-events: none; font-family: var(--font-display); font-size: clamp(80px, min(12vw, 19svh), 170px); line-height: .8; letter-spacing: -.03em; color: transparent; -webkit-text-stroke: 1px var(--line-strong); opacity: .5; }
+.press--vino .press__year, .press--dark .press__year { -webkit-text-stroke-color: var(--rosato); opacity: .35; }
+.press__quote { position: relative; }
+.ring { position: absolute; z-index: 0; width: clamp(110px, 13vw, 170px); height: auto; top: -30%; right: 2%; pointer-events: none; fill: none; stroke: var(--vino-text); stroke-width: 7; stroke-linecap: round; opacity: .14; transform: rotate(-12deg); }
+.press--vino .ring, .press--dark .ring { stroke: var(--rosato); opacity: .22; }
+.stamp { position: absolute; z-index: 3; width: clamp(80px, 8vw, 104px); height: auto; right: 4px; bottom: -10px; border-radius: 50%; background: var(--bg); box-shadow: 0 4px 14px rgba(28, 18, 14, .18); animation: stamp-spin 28s linear infinite; }
+.stamp text { font-family: var(--font-sans); font-size: 8.6px; font-weight: 600; letter-spacing: .08em; fill: var(--vino-text); }
+.stamp circle { fill: var(--vino-text); }
+.press--sunken .stamp { background: var(--bg-sunken); }
+.press--vino .stamp { background: var(--vino); }
+.press--dark .stamp { background: var(--bg-inverse); }
+.press--vino .stamp text, .press--vino .stamp circle, .press--dark .stamp text, .press--dark .stamp circle { fill: var(--rosato); }
+@keyframes stamp-spin { to { transform: rotate(360deg); } }
+@media (max-width: 880px) { .ring, .press__year { display: none; } .press__head { padding-top: 0; } .stamp { width: 64px; right: 0; bottom: -6px; } }
+@media (prefers-reduced-motion: reduce) { .stamp { animation: none; } }
+.press__title { font-size: 17px; line-height: 25px; margin: 0; opacity: .8; font-style: italic; }
 
-/* ---------- Quote with wine ring and hand underline ---------- */
-.press__quote { position: relative; margin: 0; }
+/* Quote with a hand underline on the key words */
+.press__quote { margin: 0; }
 .press__quote p {
-  position: relative; z-index: 1; margin: 0;
-  font-family: var(--font-display); font-weight: 400; font-size: clamp(30px, 3.6vw, 48px); line-height: 1.12; letter-spacing: -.01em;
-  text-wrap: balance;
+  margin: 0; font-family: var(--font-display); font-weight: 400;
+  font-size: clamp(24px, min(3.1vw, 5.2svh), 42px); line-height: 1.14; letter-spacing: -.01em; text-wrap: balance;
 }
 .press__quote p::before { content: "“"; }
 .press__quote p::after { content: "”"; }
-.press__quote--ja p { font-family: "Noto Serif JP", var(--font-display); font-size: clamp(40px, 6vw, 76px); line-height: 1.25; letter-spacing: .02em; }
+.press__quote--ja p { font-family: "Noto Serif JP", var(--font-display); font-size: clamp(28px, min(5vw, 8svh), 64px); line-height: 1.25; letter-spacing: .02em; }
 .press__quote--ja p::before { content: "「"; }
 .press__quote--ja p::after { content: "」"; }
-
 .press__quote mark {
   background: none; color: inherit; font-style: italic;
   background-image: linear-gradient(var(--rosso), var(--rosso));
   background-repeat: no-repeat; background-position: 0 92%; background-size: 0% .09em;
-  transition: background-size 1.1s cubic-bezier(.65, 0, .35, 1) .35s;
-  padding: 0 .04em;
+  transition: background-size 1.1s cubic-bezier(.65, 0, .35, 1) .35s; padding: 0 .04em;
 }
 .press__quote--ja mark { font-style: normal; }
 .press--vino .press__quote mark, .press--dark .press__quote mark { background-image: linear-gradient(var(--rosato), var(--rosato)); }
 .is-in .press__quote mark { background-size: 100% .09em; }
 
-.ring {
-  position: absolute; z-index: 0; width: clamp(150px, 18vw, 230px); height: auto;
-  top: -38%; right: 4%; pointer-events: none;
-  fill: none; stroke: var(--vino-text); stroke-width: 7; stroke-linecap: round; opacity: .14;
-  transform: rotate(-12deg);
-}
-.press--vino .ring, .press--dark .ring { stroke: var(--rosato); opacity: .2; }
-.press--center .ring { right: 50%; transform: translateX(50%) rotate(-12deg); top: -45%; }
-
-.press__tr { margin: var(--space-4) 0 0; max-width: 52ch; font-size: 16px; line-height: 26px; opacity: .8; }
-.press--center .press__tr { margin-left: auto; margin-right: auto; }
-.tr-note { font-size: 12px; opacity: .7; white-space: nowrap; }
-
-.press__more { margin-top: var(--space-5); background: none; border: 0; border-bottom: 1px solid currentColor; cursor: pointer; font-family: var(--font-sans); }
+.press__tr { margin: var(--space-3) 0 0; max-width: 52ch; font-size: 17px; line-height: 26px; opacity: .8; }
+.tr-note { font-size: 14px; opacity: .7; white-space: nowrap; }
+.press__more { font-size: 15px; margin-top: clamp(16px, 3svh, 32px); background: none; border: 0; border-bottom: 1px solid currentColor; cursor: pointer; font-family: var(--font-sans); }
 .press--vino .press__more, .press--dark .press__more { color: var(--on-vino); }
 
-/* ---------- Torn clipping with tape and spinning stamp ---------- */
-.press__clip { position: relative; margin: 0; justify-self: center; width: 100%; max-width: 480px; }
+/* Clipping: height is capped so the whole article fits the screen */
+.press__clip { position: relative; margin: 0; justify-self: center; width: 100%; display: flex; justify-content: center; }
 .press__clip img {
-  width: 100%; background: #fbf7f0; padding: 12px;
-  transform: rotate(-2deg); transition: transform .5s ease;
-  box-shadow: 0 18px 40px rgba(28, 18, 14, .22);
-  clip-path: polygon(0 1.5%, 6% 0, 14% 1.2%, 24% .2%, 33% 1.4%, 45% 0, 56% 1.1%, 68% .3%, 79% 1.5%, 90% .2%, 100% 1%, 99.4% 22%, 100% 47%, 99.2% 73%, 100% 98.6%, 88% 100%, 76% 98.8%, 63% 100%, 51% 98.9%, 38% 100%, 27% 99%, 15% 100%, 5% 98.8%, 0 100%, .7% 74%, 0 49%, .8% 24%);
+  width: auto; max-width: 100%; height: auto; max-height: calc(var(--screen) - 2 * var(--pad-y) - 24px);
+  background: #fbf7f0; padding: 10px; object-fit: contain;
+  transform: rotate(-1.5deg); transition: transform .5s ease; box-shadow: 0 18px 40px rgba(28, 18, 14, .22);
 }
-.press--right .press__clip img, .press--center .press__clip img { transform: rotate(1.6deg); }
-.press__clip:hover img { transform: rotate(0deg) scale(1.01); }
+.press--right .press__clip img { transform: rotate(1.5deg); }
+.press__clip:hover img { transform: rotate(0deg); }
 .press__clip::before {
-  content: ""; position: absolute; z-index: 2; top: -14px; left: 50%; width: 110px; height: 30px;
-  transform: translateX(-50%) rotate(-4deg);
-  background: rgba(236, 201, 191, .75); box-shadow: 0 1px 2px rgba(0, 0, 0, .08);
+  content: ""; position: absolute; z-index: 2; top: -10px; left: 50%; width: 96px; height: 26px;
+  transform: translateX(-50%) rotate(-4deg); background: rgba(236, 201, 191, .75); box-shadow: 0 1px 2px rgba(0, 0, 0, .08);
 }
-.stamp {
-  position: absolute; z-index: 3; width: clamp(96px, 10vw, 124px); height: auto; right: -22px; bottom: -44px;
-  animation: stamp-spin 28s linear infinite;
-}
-.stamp text { font-family: var(--font-sans); font-size: 8.6px; font-weight: 600; letter-spacing: .14em; fill: var(--vino-text); }
-.stamp circle { fill: var(--vino-text); }
-.press--vino .stamp text, .press--vino .stamp circle, .press--dark .stamp text, .press--dark .stamp circle { fill: var(--rosato); }
-.press--center .stamp { right: -10px; }
-@keyframes stamp-spin { to { transform: rotate(360deg); } }
+main > .press:first-child .press__clip img { max-height: calc(100svh - var(--header-h) - 2 * var(--pad-y) - 24px); }
 
 @media (max-width: 880px) {
-  .press__grid { grid-template-columns: 1fr; }
+  .press__grid { grid-template-columns: 1fr; gap: var(--space-3); }
   .press--right .press__text, .press--right .press__clip { order: 0; }
-  .press__clip { max-width: 380px; }
-  .stamp { right: 0; }
-  .ring { top: -30%; right: 0; }
+  .press__clip img, main > .press:first-child .press__clip img { max-height: clamp(110px, 30svh, 300px); }
+  .press__head { margin-bottom: var(--space-2); }
+  .press__tr { font-size: 15px; line-height: 22px; margin-top: var(--space-2); }
 }
 
 /* ---------- Reader ---------- */
@@ -123,8 +94,7 @@
 .reader::backdrop { background: rgba(20, 12, 9, .7); }
 .reader__bar { display: flex; justify-content: space-between; gap: var(--space-4); padding: var(--space-4) var(--gutter) var(--space-3); }
 .reader__bar .eyebrow { color: var(--rosato); }
-.reader__intro { margin: 0; max-width: 70ch; font-size: 15px; line-height: 24px; }
-.reader__intro--en { opacity: .65; font-style: italic; margin-top: 4px; }
+.reader__intro { margin: 0; max-width: 70ch; font-size: 18px; line-height: 28px; }
 .reader__close { background: none; border: 1px solid rgba(244, 236, 224, .4); color: inherit; width: 44px; height: 44px; border-radius: 50%; font-size: 24px; line-height: 1; cursor: pointer; flex: 0 0 auto; }
 .reader__table { flex: 1; position: relative; min-height: 0; margin: 0 var(--gutter); }
 .reader__table img {
@@ -135,22 +105,9 @@
 .reader__nav { display: flex; justify-content: center; align-items: center; gap: var(--space-4); padding: var(--space-3) 0 var(--space-4); font-size: 13px; letter-spacing: .14em; }
 .reader__nav button { background: none; border: 1px solid rgba(244, 236, 224, .4); color: inherit; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; font-size: 18px; }
 .reader__nav button:disabled { opacity: .3; cursor: default; }
+@media (max-width: 600px) { .reader__intro { font-size: 14px; line-height: 21px; } .reader__bar { padding-top: var(--space-3); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .stamp { animation: none; }
   .press__quote mark { transition: none; background-size: 100% .09em; }
   .reader__table img { transition: none; }
 }
-
-/* Stamp sits on a disc of the band colour so it reads like a sticker over the clipping */
-.stamp { border-radius: 50%; background: var(--bg); box-shadow: 0 4px 14px rgba(28, 18, 14, .18); }
-.press--sunken .stamp { background: var(--bg-sunken); }
-.press--vino .stamp { background: var(--vino); }
-.press--dark .stamp { background: var(--bg-inverse); }
-.stamp text { font-size: 8.6px; letter-spacing: .08em; }
-.press--center .press__clip { max-width: 420px; }
-@media (max-width: 880px) { .press-hero { padding-top: calc(76px + 48px); } }
-
-main > .press:first-child { padding-top: calc(118px + clamp(48px, 7vw, 96px)); }
-@media (max-width: 880px) { main > .press:first-child { padding-top: calc(76px + 40px); } }
-.press__title { margin: 0; }

@@ -103,28 +103,29 @@
     });
   }
 
-  // Wine catalogue: category tabs show their list on the page
+  // Wine catalogue: category tabs and pages, so the list always fits one screen
   var grid = document.querySelector('[data-wine-grid]');
   if (grid && window.VANNI_CATEGORIES) {
     var cats = window.VANNI_CATEGORIES;
     var tabs = document.querySelectorAll('[data-cat]');
     var panel = document.getElementById('wine-panel');
+    var section = document.getElementById('catalogo');
+    var pager = panel.querySelector('[data-pager]');
+    var pagePrev = pager.querySelector('[data-page-prev]');
+    var pageNext = pager.querySelector('[data-page-next]');
+    var pageCount = pager.querySelector('[data-page-count]');
     var esc = function (t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
     var euro = function (n) { return '\u20ac ' + String(n).replace('.', tx(',', '.')); };
-    var currentCat = null;
-    var select = function (id, scroll) {
-      var cat = cats.filter(function (c) { return c.id === id; })[0] || cats[0];
-      currentCat = cat.id;
+    var pageSize = function () { var w = window.innerWidth; return w > 1000 ? 4 : (w > 600 ? 6 : 3); };
+    var currentCat = cats[0].id, currentPage = 0;
+    var render = function () {
+      var cat = cats.filter(function (c) { return c.id === currentCat; })[0] || cats[0];
+      var size = pageSize();
+      var pages = Math.max(1, Math.ceil(cat.wines.length / size));
+      currentPage = Math.max(0, Math.min(pages - 1, currentPage));
       var catName = tx(cat.name, cat.nameEn || cat.name);
-      tabs.forEach(function (t) {
-        var on = t.dataset.cat === cat.id;
-        t.setAttribute('aria-selected', on ? 'true' : 'false');
-        t.tabIndex = on ? 0 : -1;
-      });
-      panel.setAttribute('aria-labelledby', 'tab-' + cat.id);
-      panel.querySelector('[data-panel-title]').innerHTML = esc(catName);
       panel.querySelector('[data-panel-intro]').textContent = tx(cat.intro, cat.introEn || cat.intro);
-      grid.innerHTML = cat.wines.map(function (w) {
+      grid.innerHTML = cat.wines.slice(currentPage * size, (currentPage + 1) * size).map(function (w) {
         var img = w.img || cat.placeholder;
         var wName = tx(w.name, w.nameEn || w.name);
         var wArea = tx(w.area, w.areaEn || w.area);
@@ -132,11 +133,26 @@
         return '<article class="wine-card"><div class="wine-card__img"><img src="' + esc(img) + '" alt="' + esc(wName) + '" loading="lazy"></div>' +
           '<div class="wine-card__body"><p class="wine-card__area">' + esc(catName) + ' \u00b7 ' + esc(wArea) + '</p><h3>' + esc(wName) + '</h3>' + price + '</div></article>';
       }).join('');
-      if (scroll) panel.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+      pager.hidden = pages < 2;
+      pageCount.textContent = (currentPage + 1) + ' / ' + pages;
+      pagePrev.disabled = currentPage === 0;
+      pageNext.disabled = currentPage === pages - 1;
+    };
+    var select = function (id, scroll) {
+      var cat = cats.filter(function (c) { return c.id === id; })[0] || cats[0];
+      currentCat = cat.id; currentPage = 0;
+      tabs.forEach(function (t) {
+        var on = t.dataset.cat === cat.id;
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+        t.tabIndex = on ? 0 : -1;
+      });
+      panel.setAttribute('aria-labelledby', 'tab-' + cat.id);
+      render();
+      if (scroll && section) section.scrollIntoView({ behavior: (reduce || scroll === 'instant') ? 'instant' : 'smooth', block: 'start' });
     };
     tabs.forEach(function (t, i) {
       t.addEventListener('click', function () {
-        select(t.dataset.cat, true);
+        select(t.dataset.cat, false);
         if (history.replaceState) history.replaceState(null, '', '#' + t.dataset.cat);
       });
       t.addEventListener('keydown', function (e) {
@@ -147,14 +163,17 @@
         n.focus(); n.click();
       });
     });
+    pagePrev.addEventListener('click', function () { currentPage--; render(); });
+    pageNext.addEventListener('click', function () { currentPage++; render(); });
     var fromHash = function (scroll) {
       var id = location.hash.replace('#', '');
       var known = cats.some(function (c) { return c.id === id; });
-      select(known ? id : cats[0].id, scroll && known);
+      select(known ? id : cats[0].id, known ? scroll : false);
     };
     window.addEventListener('hashchange', function () { fromHash(true); });
-    fromHash(true);
-    langListeners.push(function () { select(currentCat, false); });
+    window.addEventListener('resize', render);
+    fromHash('instant');
+    langListeners.push(render);
   }
 
   // Newsletter (not connected to an email service yet)
@@ -186,11 +205,20 @@
   var y = document.querySelector('[data-year]');
   if (y) y.textContent = new Date().getFullYear();
   applyLang();
-  // Re-align to the #anchor once images have loaded (layout shifts otherwise leave it off-target)
-  window.addEventListener('load', function () {
-    var id = location.hash.replace('#', '');
-    if (!id) return;
-    var el = document.getElementById(id);
-    if (el && !document.querySelector('[data-cat="' + id + '"]')) el.scrollIntoView({ behavior: 'auto', block: 'start' });
+  // Re-align to the #anchor once fonts and images have settled (layout shifts otherwise leave it off-target).
+  // Skipped as soon as the visitor scrolls on their own.
+  var touched = false;
+  ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach(function (ev) {
+    window.addEventListener(ev, function () { touched = true; }, { passive: true, once: true });
   });
+  function alignHash() {
+    if (touched) return;
+    var id = decodeURIComponent(location.hash.replace('#', ''));
+    if (!id) return;
+    var el = document.getElementById(id) || (document.querySelector('[data-cat="' + id + '"]') && document.getElementById('catalogo'));
+    if (el) el.scrollIntoView({ behavior: 'instant', block: 'start' });
+  }
+  window.addEventListener('load', alignHash);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(alignHash);
+  [400, 1200, 2500].forEach(function (ms) { setTimeout(alignHash, ms); });
 })();
